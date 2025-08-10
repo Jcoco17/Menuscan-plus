@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin - MenuScan+</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .order-card { transition: all 0.3s; }
+    .order-card:hover { transform: translateY(-5px); }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">Panel de Pedidos</h1>
+    
+    <div id="login-section" class="mb-4">
+      <input id="email" type="email" placeholder="Email" class="form-control mb-2">
+      <input id="password" type="password" placeholder="Contraseña" class="form-control mb-2">
+      <button onclick="login()" class="btn btn-primary">Acceder</button>
+    </div>
+
+    <div id="orders-section" class="d-none">
+      <div class="row" id="orders-container">
+        <!-- Pedidos se cargarán aquí -->
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+  
+  <script>
+    // Configuración Firebase
+    const firebaseConfig = {
+      apiKey:  process.env.FIREBASE_API_KEY,
+      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      projectId: process.env.FIREBASE_PROJECT_ID
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // Función de login
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        await firebase.auth().signInWithEmailAndPassword(email, password);
+        document.getElementById('login-section').classList.add('d-none');
+        document.getElementById('orders-section').classList.remove('d-none');
+        loadOrders();
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    }
+
+    // Escuchar pedidos en tiempo real
+    function loadOrders() {
+      db.collection("orders")
+        .orderBy("createdAt", "desc")
+        .onSnapshot(snapshot => {
+          const container = document.getElementById('orders-container');
+          container.innerHTML = '';
+          
+          snapshot.forEach(doc => {
+            const order = doc.data();
+            container.innerHTML += `
+              <div class="col-md-4 mb-4">
+                <div class="card order-card">
+                  <div class="card-body">
+                    <h5 class="card-title">Mesa ${order.table}</h5>
+                    <p class="card-text">${order.item}</p>
+                    <p class="text-muted">${order.createdAt?.toDate().toLocaleString()}</p>
+                    <select class="form-select" onchange="updateStatus('${doc.id}', this.value)">
+                      <option ${order.status === 'pendiente' ? 'selected' : ''}>pendiente</option>
+                      <option ${order.status === 'preparacion' ? 'selected' : ''}>preparacion</option>
+                      <option ${order.status === 'listo' ? 'selected' : ''}>listo</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        });
+    }
+
+    // Actualizar estado
+    function updateStatus(orderId, status) {
+      db.collection("orders").doc(orderId).update({ status });
+    }
+
+    // Proteger acceso
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('login-section').classList.add('d-none');
+        document.getElementById('orders-section').classList.remove('d-none');
+        loadOrders();
+      }
+    });
+  </script>
+</body>
+</html>
