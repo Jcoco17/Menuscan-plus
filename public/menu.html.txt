@@ -1,0 +1,26 @@
+<body>
+  <h1 id="table-header">Mesa: </h1>
+  <div class="menu-item">
+    <h3>Pizza Margarita</h3>
+    <button onclick="orderItem('Pizza Margarita')">Ordenar</button>
+  </div>
+
+  <script>
+    // Mostrar mesa desde URL
+    const params = new URLSearchParams(window.location.search);
+    document.getElementById('table-header').textContent += params.get('table');
+
+    // Enviar pedido al backend
+    async function orderItem(item) {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          item: item,
+          table: params.get('table') 
+        })
+      });
+      alert(await response.json().message);
+    }
+  </script>
+</body>

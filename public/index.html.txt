@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MenuScan+</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    #qr-reader { margin: 0 auto; width: 300px; }
+  </style>
+</head>
+<body>
+  <h1>Escanea el QR de tu mesa</h1>
+  <div id="qr-reader"></div>
+  
+  <script>
+    const qrScanner = new Html5QrcodeScanner('qr-reader', { fps: 10 });
+    qrScanner.render((qrData) => {
+      window.location.href = `/menu.html?table=${encodeURIComponent(qrData)}`;
+    });
+  </script>
+</body>
+</html>
