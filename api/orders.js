@@ -3,7 +3,6 @@ import { getFirestore } from 'firebase-admin/firestore';
 
 // Configura Firebase (usa tus credenciales)
 const app = initializeApp({
-
   credential: applicationDefault(), // Auto-config en Vercel
   databaseURL: "https://menuscan-plus.firebaseio.com"
 });
