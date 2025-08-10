@@ -24,7 +24,13 @@
       </div>
     </div>
   </div>
-
+	
+<div id="register-section">
+  <h2>Registrar nuevo administrador</h2>
+  <input type="email" id="new-email" placeholder="Email">
+  <input type="password" id="new-password" placeholder="Contraseña">
+  <button onclick="registerUser()">Registrar</button>
+</div>
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
@@ -53,6 +59,22 @@
         alert("Error: " + error.message);
       }
     }
+	
+	async function registerUser() {
+    const email = document.getElementById('new-email').value;
+    const password = document.getElementById('new-password').value;
+    
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      alert(await response.text());
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  }
 
     // Escuchar pedidos en tiempo real
     function loadOrders() {
