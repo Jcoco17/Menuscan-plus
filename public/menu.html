@@ -1,40 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MenuScan+</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .filters { margin: 20px 0; }
+    .menu-item { border: 1px solid #ddd; padding: 15px; margin-bottom: 10px; border-radius: 8px; }
+    button { background: #2E8B57; color: white; border: none; padding: 8px 15px; cursor: pointer; }
+  </style>
+</head>
 <body>
-  <h1 id="table-header">Mesa: </h1>
-  <div class="menu-item">
-    <h3>Pizza Margarita</h3>
-    <button onclick="orderItem('Pizza Margarita')">Ordenar</button>
+  <h1 id="table-header"></h1>
+  
+  <div class="filters">
+    <button onclick="filterMenu('all')">🍽️ Todos</button>
+    <button onclick="filterMenu('vegan')">🌱 Vegano</button>
+    <button onclick="filterMenu('glutenFree')">🚫 Sin Gluten</button>
   </div>
 
-  <div class="filters">
-  <button onclick="filterMenu('vegan')">🌱 Vegano</button>
-  <button onclick="filterMenu('gluten-free')">🚫 Gluten</button>
-</div>
+  <div id="menu-container">
+    <!-- Los ítems del menú se cargarán aquí con JavaScript -->
+  </div>
 
   <script>
-    // Mostrar mesa desde URL
+    // Obtener mesa de la URL
     const params = new URLSearchParams(window.location.search);
-    document.getElementById('table-header').textContent += params.get('table');
+    const tableId = params.get('table');
+    document.getElementById('table-header').textContent = `Mesa: ${tableId || 'No especificada'}`;
 
-	  // Ejemplo de filtrado
-  function filterMenu(diet) {
-    const items = document.querySelectorAll('.menu-item');
-    items.forEach(item => {
-      const isMatch = item.dataset[diet] === 'true';
-      item.style.display = isMatch ? 'block' : 'none';
-    });
-  }
+    // Datos del menú (luego los traeremos de Firebase)
+    const menuItems = [
+      { id: 1, name: "Pizza Margherita", price: 12, vegan: false, glutenFree: false },
+      { id: 2, name: "Ensalada César", price: 8, vegan: false, glutenFree: true },
+      { id: 3, name: "Bowl Vegano", price: 10, vegan: true, glutenFree: true }
+    ];
 
-    // Enviar pedido al backend
-    async function orderItem(item) {
-      const response = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          item: item,
-          table: params.get('table') 
-        })
-      });
-      alert(await response.json().message);
+    // Mostrar menú
+    function renderMenu(items = menuItems) {
+      const container = document.getElementById('menu-container');
+      container.innerHTML = items.map(item => `
+        <div class="menu-item" data-vegan="${item.vegan}" data-glutenFree="${item.glutenFree}">
+          <h3>${item.name} - $${item.price}</h3>
+          <button onclick="orderItem(${item.id})">Ordenar</button>
+        </div>
+      `).join('');
     }
+
+    // Filtros
+    function filterMenu(type) {
+      if (type === 'all') return renderMenu();
+      const filtered = menuItems.filter(item => item[type]);
+      renderMenu(filtered);
+    }
+
+    // Ordenar ítem
+    async function orderItem(itemId) {
+      const item = menuItems.find(i => i.id === itemId);
+      try {
+        const response = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item: item.name, table: tableId })
+        });
+        alert(await response.json().message);
+      } catch (error) {
+        alert("Error al ordenar");
+      }
+    }
+
+    // Cargar menú al iniciar
+    renderMenu();
   </script>
 </body>
+</html>
