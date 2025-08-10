@@ -38,12 +38,15 @@
   <script>
     // Configuración Firebase
     const firebaseConfig = {
-      apiKey:  process.env.FIREBASE_API_KEY,
-      authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-      projectId: process.env.FIREBASE_PROJECT_ID
+      apiKey:  "AIzaSyAW2JzHFDcclQa7ZRcWqXRxDwK1m9sR9cs",
+      authDomain: "menuscan-plus.firebaseapp.com",
+      projectId: "menuscan-plus"
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();    
+const db = firebase.firestore();
 
     // Función de login
     async function login() {
